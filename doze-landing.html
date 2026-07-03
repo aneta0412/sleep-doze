@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Doze — the one-button kids sleep tracker</title>
+<meta name="description" content="Press once when they fall asleep, once when they wake. No account, no ads, no subscription. See sleep vs the recommended range for their age.">
+<meta property="og:title" content="Doze — the one-button kids sleep tracker">
+<meta property="og:description" content="One button. No account. Nothing leaves your phone.">
+<meta name="theme-color" content="#141327">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --night:#141327;--night2:#1d1b38;--star:#f5edda;--moon:#ffd98a;
+    --lavender:#a99ee0;--good:#8fd6a8;--dim:#8b87a8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:radial-gradient(120% 70% at 50% 0%, var(--night2) 0%, var(--night) 55%);
+    color:var(--star);font-family:'Nunito',system-ui,sans-serif;line-height:1.6;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:0 24px}
+
+  /* stars */
+  .sky{position:fixed;inset:0;pointer-events:none;z-index:0}
+  .sky i{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--star);opacity:0.5}
+
+  main{position:relative;z-index:1}
+
+  /* hero */
+  .hero{padding:90px 0 60px;text-align:center}
+  .moon-mark{
+    width:96px;height:96px;border-radius:50%;margin:0 auto 26px;
+    background:radial-gradient(circle at 35% 30%, #fff3cf, var(--moon) 70%);
+    box-shadow:0 0 70px rgba(255,217,138,0.3);
+  }
+  h1{
+    font-family:'Fraunces',serif;font-weight:700;
+    font-size:clamp(38px,7vw,64px);line-height:1.08;letter-spacing:-0.01em;
+  }
+  .hero p.lede{
+    font-size:clamp(17px,2.5vw,21px);color:var(--dim);max-width:520px;margin:20px auto 0;
+  }
+  .hero p.lede b{color:var(--star)}
+  .cta-row{margin-top:36px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+  .btn{
+    display:inline-block;text-decoration:none;border-radius:14px;
+    font-family:'Nunito',sans-serif;font-weight:800;font-size:16px;
+    padding:16px 30px;transition:transform .1s ease;
+  }
+  .btn:active{transform:scale(0.98)}
+  .btn.primary{background:var(--moon);color:var(--night)}
+  .btn.primary:hover{background:#ffe3a3}
+  .btn.ghost{border:1.5px solid rgba(245,237,218,0.35);color:var(--star)}
+  .btn.ghost:hover{border-color:var(--star)}
+  .no-strings{
+    margin-top:22px;font-size:13px;color:var(--dim);
+    display:flex;gap:16px;justify-content:center;flex-wrap:wrap;
+  }
+  .no-strings span::before{content:'✓ ';color:var(--good);font-weight:800}
+
+  /* how it works */
+  section{padding:56px 0}
+  h2{
+    font-family:'Fraunces',serif;font-weight:600;font-size:clamp(26px,4vw,34px);
+    text-align:center;margin-bottom:36px;
+  }
+  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+  .step{
+    background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.08);
+    border-radius:18px;padding:26px 22px;text-align:center;
+  }
+  .step .n{
+    font-family:'Fraunces',serif;font-weight:700;font-size:15px;color:var(--night);
+    background:var(--moon);width:30px;height:30px;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;margin-bottom:14px;
+  }
+  .step h3{font-size:17px;font-weight:800;margin-bottom:6px}
+  .step p{font-size:14.5px;color:var(--dim)}
+
+  /* why */
+  .why{max-width:620px;margin:0 auto}
+  .why-item{display:flex;gap:14px;margin-bottom:20px;align-items:flex-start}
+  .why-item .em{font-size:24px;flex:0 0 auto;margin-top:2px}
+  .why-item h3{font-size:16.5px;font-weight:800}
+  .why-item p{font-size:14.5px;color:var(--dim)}
+
+  /* install */
+  .install-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;max-width:820px;margin:0 auto}
+  .inst{
+    background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.08);
+    border-radius:18px;padding:24px 22px;
+  }
+  .inst h3{font-size:16px;font-weight:800;margin-bottom:8px}
+  .inst p{font-size:14px;color:var(--dim)}
+  .inst .badge{
+    display:inline-block;margin-top:12px;font-size:11.5px;font-weight:700;
+    color:var(--lavender);border:1px solid rgba(169,158,224,0.4);
+    border-radius:99px;padding:3px 10px;
+  }
+
+  footer{
+    text-align:center;padding:50px 24px 60px;color:var(--dim);font-size:12.5px;
+    border-top:1px solid rgba(255,255,255,0.07);margin-top:30px;
+  }
+  footer a{color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="sky" id="sky"></div>
+<main>
+  <div class="wrap">
+
+    <div class="hero">
+      <div class="moon-mark"></div>
+      <h1>One button.<br>That's the whole app.</h1>
+      <p class="lede">Press once when they fall asleep. Press once when they wake. Doze quietly tells you whether your child is getting <b>the sleep their age needs</b> — and that's it.</p>
+      <div class="cta-row">
+        <a class="btn primary" href="/app.html">Open Doze</a>
+        <a class="btn ghost" href="#install">Install it free</a>
+      </div>
+      <div class="no-strings">
+        <span>No account</span><span>No ads</span><span>No subscription</span><span>Nothing leaves your phone</span>
+      </div>
+    </div>
+
+    <section>
+      <h2>Built for 2am, not for engagement</h2>
+      <div class="steps">
+        <div class="step"><span class="n">1</span><h3>They fall asleep</h3><p>Open Doze, press the moon. Done. The screen is dim on purpose — it won't light up the nursery.</p></div>
+        <div class="step"><span class="n">2</span><h3>They wake up</h3><p>Press again. Accidental taps under a minute are ignored, and there's an undo if you fumble it.</p></div>
+        <div class="step"><span class="n">3</span><h3>You see the answer</h3><p>Total sleep in the last 24 hours vs the recommended range for their age, a week view, and one gentle tip a day.</p></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Why not the other sleep apps?</h2>
+      <div class="why">
+        <div class="why-item"><span class="em">🚫</span><div><h3>No onboarding gauntlet</h3><p>No intro carousel, no "create your free account", no email verification while your toddler screams. Doze opens straight to the button.</p></div></div>
+        <div class="why-item"><span class="em">💸</span><div><h3>No subscription trap</h3><p>Everything is free, forever. There is no premium tier hiding the useful bits.</p></div></div>
+        <div class="why-item"><span class="em">🔒</span><div><h3>Private by architecture</h3><p>Sleep data is stored on your device and never sent anywhere. We couldn't sell your data if we wanted to — we never have it.</p></div></div>
+        <div class="why-item"><span class="em">📴</span><div><h3>Works with no signal</h3><p>Doze runs fully offline. Nursery with terrible Wi-Fi? Doesn't matter.</p></div></div>
+      </div>
+    </section>
+
+    <section id="install">
+      <h2>Install it anywhere, free</h2>
+      <div class="install-grid">
+        <div class="inst">
+          <h3>📱 Android / Pixel</h3>
+          <p>Open this site in Chrome → menu (⋮) → <b>Add to Home screen</b>. Opens like any app, works offline.</p>
+          <span class="badge">Google Play version coming soon</span>
+        </div>
+        <div class="inst">
+          <h3>🍎 iPhone / iPad</h3>
+          <p>Open in Safari → Share → <b>Add to Home Screen</b>. Full-screen, one tap from your home screen.</p>
+        </div>
+        <div class="inst">
+          <h3>💻 Desktop</h3>
+          <p>In Chrome or Edge, click the <b>install icon</b> in the address bar. Doze becomes a standalone app with its own window — no store, no download file.</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer>
+    Doze is a gentle guide, not medical advice — every child is different.<br>
+    Recommended sleep ranges follow paediatric guidance (AASM / NHS). · <a href="/app.html">Open the app</a>
+  </footer>
+</main>
+
+<script>
+// scatter a few stars
+const sky = document.getElementById('sky');
+for(let i=0;i<40;i++){
+  const s=document.createElement('i');
+  s.style.left=Math.random()*100+'%';
+  s.style.top=Math.random()*100+'%';
+  s.style.opacity=(0.15+Math.random()*0.45).toFixed(2);
+  s.style.transform=`scale(${(0.5+Math.random()).toFixed(2)})`;
+  sky.appendChild(s);
+}
+</script>
+</body>
+</html>
