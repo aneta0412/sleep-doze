@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Doze — one-button sleep tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Night-nursery palette: dim by design — this app is used in the dark at 2am. */
+  :root{
+    --night:#141327;
+    --night2:#1d1b38;
+    --star:#f5edda;
+    --moon:#ffd98a;
+    --lavender:#a99ee0;
+    --good:#8fd6a8;
+    --warn:#f0b27a;
+    --dim:#8b87a8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    background:radial-gradient(120% 90% at 50% 0%, var(--night2) 0%, var(--night) 60%);
+    color:var(--star);
+    font-family:'Nunito',system-ui,sans-serif;
+    display:flex;flex-direction:column;align-items:center;
+    min-height:100vh;
+    padding:20px 16px 40px;
+  }
+  .app{width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center}
+
+  h1{
+    font-family:'Fraunces',serif;font-weight:700;
+    font-size:26px;letter-spacing:0.01em;margin-top:6px;
+  }
+  .sub{color:var(--dim);font-size:13px;margin-top:2px}
+
+  /* ---------- THE button ---------- */
+  .big-wrap{margin:34px 0 10px;position:relative}
+  .big{
+    width:min(240px,62vw);height:min(240px,62vw);
+    border-radius:50%;
+    border:none;cursor:pointer;
+    font-family:'Fraunces',serif;font-weight:700;font-size:24px;
+    color:var(--night);
+    background:radial-gradient(circle at 35% 30%, #fff3cf, var(--moon) 70%);
+    box-shadow:0 0 60px rgba(255,217,138,0.25), inset 0 -8px 20px rgba(0,0,0,0.12);
+    transition:transform .1s ease;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  }
+  .big:active{transform:scale(0.965)}
+  .big .icon{font-size:44px;line-height:1}
+  .big.sleeping{
+    background:radial-gradient(circle at 35% 30%, #cfc6f5, var(--lavender) 70%);
+    box-shadow:0 0 70px rgba(169,158,224,0.35), inset 0 -8px 20px rgba(0,0,0,0.15);
+    animation:breathe 4s ease-in-out infinite;
+  }
+  @keyframes breathe{
+    0%,100%{box-shadow:0 0 50px rgba(169,158,224,0.25), inset 0 -8px 20px rgba(0,0,0,0.15)}
+    50%{box-shadow:0 0 90px rgba(169,158,224,0.45), inset 0 -8px 20px rgba(0,0,0,0.15)}
+  }
+  @media (prefers-reduced-motion:reduce){.big.sleeping{animation:none}}
+  .big:focus-visible{outline:3px solid var(--star);outline-offset:6px}
+
+  .since{
+    font-size:14px;color:var(--dim);min-height:22px;margin-top:12px;text-align:center;
+    font-variant-numeric:tabular-nums;
+  }
+  .since b{color:var(--star);font-weight:700}
+
+  .undo{
+    background:none;border:none;color:var(--dim);text-decoration:underline;
+    font-family:'Nunito',sans-serif;font-size:13px;cursor:pointer;margin-top:8px;display:none;
+  }
+  .undo.on{display:inline}
+
+  /* ---------- today card ---------- */
+  .card{
+    width:100%;
+    background:rgba(255,255,255,0.045);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:18px;
+    padding:18px;margin-top:26px;
+  }
+  .card h2{
+    font-family:'Fraunces',serif;font-weight:500;font-size:16px;
+    color:var(--dim);margin-bottom:10px;letter-spacing:0.02em;
+  }
+  .total{
+    font-family:'Fraunces',serif;font-weight:700;font-size:34px;
+    font-variant-numeric:tabular-nums;
+  }
+  .total small{font-size:16px;color:var(--dim);font-weight:500}
+  .target{margin-top:6px;font-size:14px;line-height:1.5}
+  .target.good{color:var(--good)}
+  .target.low{color:var(--warn)}
+  .meter{height:9px;background:rgba(255,255,255,0.08);border-radius:99px;margin-top:12px;overflow:hidden}
+  .meter i{display:block;height:100%;border-radius:99px;background:var(--lavender);transition:width .5s ease}
+
+  /* ---------- week ---------- */
+  .week{display:flex;gap:6px;align-items:flex-end;height:88px;margin-top:14px}
+  .day{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
+  .day .col{
+    width:100%;background:rgba(255,255,255,0.08);border-radius:6px 6px 3px 3px;
+    position:relative;height:64px;overflow:hidden;
+  }
+  .day .col i{
+    position:absolute;bottom:0;left:0;right:0;background:var(--lavender);border-radius:6px 6px 0 0;
+  }
+  .day .col i.met{background:var(--good)}
+  .day span{font-size:10.5px;color:var(--dim);font-weight:600}
+
+  .tip{margin-top:12px;font-size:13.5px;color:var(--dim);line-height:1.55}
+  .tip b{color:var(--star)}
+
+  /* ---------- age setting (one-time, tucked away) ---------- */
+  .age-row{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    margin-top:22px;width:100%;font-size:13px;color:var(--dim);
+  }
+  select{
+    background:var(--night2);color:var(--star);
+    border:1px solid rgba(255,255,255,0.15);border-radius:8px;
+    padding:7px 10px;font-family:'Nunito',sans-serif;font-size:13px;
+  }
+  select:focus-visible{outline:2px solid var(--star)}
+  footer{margin-top:26px;font-size:11px;color:var(--dim);text-align:center;max-width:340px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>Doze</h1>
+  <div class="sub">Press once asleep · press once awake</div>
+
+  <div class="big-wrap">
+    <button class="big" id="btn" aria-live="polite">
+      <span class="icon" id="btnIcon">🌙</span>
+      <span id="btnText">Asleep</span>
+    </button>
+  </div>
+  <div class="since" id="since"></div>
+  <button class="undo" id="undo">undo last press</button>
+
+  <div class="card">
+    <h2>Sleep in the last 24 h</h2>
+    <div class="total" id="total">0<small> h</small></div>
+    <div class="target" id="target"></div>
+    <div class="meter"><i id="meterFill"></i></div>
+  </div>
+
+  <div class="card">
+    <h2>This week</h2>
+    <div class="week" id="week"></div>
+    <p class="tip" id="tip"></p>
+  </div>
+
+  <div class="age-row">
+    <span>Child's age (sets the recommended range)</span>
+    <select id="age">
+      <option value="infant">4–12 months</option>
+      <option value="toddler" selected>1–2 years</option>
+      <option value="preschool">3–5 years</option>
+      <option value="school">6–12 years</option>
+      <option value="teen">13–18 years</option>
+    </select>
+  </div>
+
+  <footer>
+    Recommended ranges follow paediatric sleep guidance (incl. naps per 24 h). This is a gentle guide, not medical advice — every child is different.
+  </footer>
+</div>
+
+<script>
+// Recommended sleep per 24h (hours, incl. naps) — AASM/NHS-aligned ranges
+const RANGES = {
+  infant:   {min:12, max:16, label:'12–16 h'},
+  toddler:  {min:11, max:14, label:'11–14 h'},
+  preschool:{min:10, max:13, label:'10–13 h'},
+  school:   {min:9,  max:12, label:'9–12 h'},
+  teen:     {min:8,  max:10, label:'8–10 h'}
+};
+
+const TIPS = {
+  low: [
+    "A consistent wind-down 30 min before bed (bath, book, dim lights) helps kids fall asleep faster.",
+    "Short on sleep today — an earlier bedtime tonight beats a long lie-in tomorrow for resetting rhythm.",
+    "Screens off an hour before bed makes a measurable difference to how quickly children drop off."
+  ],
+  good: [
+    "Right in the healthy range — the best thing now is keeping bed and wake times consistent, even weekends.",
+    "On track. Consistent wake-up time is the anchor that keeps the whole schedule steady.",
+    "Great — a dark, cool room (16–20°C) helps keep sleep this solid."
+  ],
+  high: [
+    "Above the typical range — usually fine, but if it's a pattern alongside daytime tiredness, worth mentioning at the next check-up."
+  ]
+};
+
+let state = { sessions: [], sleeping: null, age: 'toddler', lastAction: null };
+const $ = id => document.getElementById(id);
+
+async function load(){
+  try{
+    const r = await window.storage.get('doze-state');
+    if(r && r.value) state = {...state, ...JSON.parse(r.value)};
+  }catch(e){ /* first run — nothing saved yet */ }
+  $('age').value = state.age;
+  render();
+}
+
+async function save(){
+  try{ await window.storage.set('doze-state', JSON.stringify(state)); }
+  catch(e){ console.error('save failed', e); }
+}
+
+$('btn').addEventListener('click', async () => {
+  const now = Date.now();
+  if(state.sleeping){
+    // waking up — close the session
+    const start = state.sleeping;
+    if(now - start > 60000){ // ignore accidental <1min presses
+      state.sessions.push({start, end: now});
+      // keep 30 days
+      const cutoff = now - 30*86400000;
+      state.sessions = state.sessions.filter(s => s.end > cutoff);
+    }
+    state.lastAction = {type:'wake', prev:start};
+    state.sleeping = null;
+  }else{
+    state.sleeping = now;
+    state.lastAction = {type:'sleep'};
+  }
+  await save();
+  render();
+});
+
+$('undo').addEventListener('click', async () => {
+  const a = state.lastAction;
+  if(!a) return;
+  if(a.type === 'sleep'){ state.sleeping = null; }
+  else if(a.type === 'wake'){ state.sessions.pop(); state.sleeping = a.prev; }
+  state.lastAction = null;
+  await save();
+  render();
+});
+
+$('age').addEventListener('change', async e => {
+  state.age = e.target.value;
+  await save();
+  render();
+});
+
+function hoursIn(fromMs, toMs){
+  // sum sleep overlapping [fromMs, toMs], including a live session
+  let ms = 0;
+  const now = Date.now();
+  const all = [...state.sessions];
+  if(state.sleeping) all.push({start: state.sleeping, end: now});
+  for(const s of all){
+    const a = Math.max(s.start, fromMs), b = Math.min(s.end, toMs);
+    if(b > a) ms += b - a;
+  }
+  return ms / 3600000;
+}
+
+function fmt(h){
+  const H = Math.floor(h), M = Math.round((h - H) * 60);
+  return M ? `${H} h ${M} m` : `${H} h`;
+}
+
+let ticker = null;
+
+function render(){
+  const btn = $('btn'), r = RANGES[state.age];
+
+  // button state
+  if(state.sleeping){
+    btn.classList.add('sleeping');
+    $('btnIcon').textContent = '☀️';
+    $('btnText').textContent = 'Awake';
+  }else{
+    btn.classList.remove('sleeping');
+    $('btnIcon').textContent = '🌙';
+    $('btnText').textContent = 'Asleep';
+  }
+  $('undo').classList.toggle('on', !!state.lastAction);
+
+  // live "sleeping for" line
+  clearInterval(ticker);
+  const tick = () => {
+    if(state.sleeping){
+      const mins = Math.floor((Date.now() - state.sleeping) / 60000);
+      const h = Math.floor(mins/60), m = mins%60;
+      $('since').innerHTML = `Sleeping for <b>${h ? h+' h ' : ''}${m} m</b>`;
+    }else{
+      $('since').textContent = state.sessions.length ? 'Awake' : 'Press the moon when they fall asleep';
+    }
+  };
+  tick();
+  if(state.sleeping) ticker = setInterval(tick, 30000);
+
+  // last-24h total vs recommended
+  const now = Date.now();
+  const h24 = hoursIn(now - 86400000, now);
+  $('total').innerHTML = `${fmt(h24)}`;
+  const t = $('target');
+  const pct = Math.min(100, (h24 / r.max) * 100);
+  $('meterFill').style.width = pct + '%';
+  let band;
+  if(h24 >= r.min && h24 <= r.max + 1){
+    band = 'good';
+    t.className = 'target good';
+    t.textContent = `Within the recommended ${r.label} for this age ✓`;
+  }else if(h24 < r.min){
+    band = 'low';
+    const gap = r.min - h24;
+    t.className = 'target low';
+    t.textContent = `About ${fmt(gap)} under the recommended ${r.label}`;
+  }else{
+    band = 'high';
+    t.className = 'target good';
+    t.textContent = `Above the typical ${r.label} — usually nothing to worry about`;
+  }
+
+  // week bars (each day = calendar day, local)
+  const week = $('week');
+  week.innerHTML = '';
+  const dayNames = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  for(let i = 6; i >= 0; i--){
+    const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() - i);
+    const from = d.getTime(), to = from + 86400000;
+    const h = hoursIn(from, to);
+    const met = h >= r.min;
+    const hpct = Math.min(100, (h / r.max) * 100);
+    const el = document.createElement('div');
+    el.className = 'day';
+    el.innerHTML = `<div class="col"><i class="${met ? 'met':''}" style="height:${hpct}%"></i></div>
+      <span>${i === 0 ? 'Today' : dayNames[d.getDay()]}</span>`;
+    week.appendChild(el);
+  }
+
+  // one gentle tip, rotating daily
+  const pool = TIPS[band] || TIPS.good;
+  const tipIdx = new Date().getDate() % pool.length;
+  $('tip').innerHTML = `<b>Tip:</b> ${pool[tipIdx]}`;
+}
+
+load();
+</script>
+</body>
+</html>
