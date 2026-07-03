@@ -1,0 +1,18 @@
+{
+  "name": "Doze — one-button kids sleep tracker",
+  "short_name": "Doze",
+  "description": "Press once when they fall asleep, once when they wake. No accounts, no forms, no faff. See sleep vs the recommended range for their age.",
+  "id": "/app.html",
+  "start_url": "/app.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#141327",
+  "theme_color": "#141327",
+  "categories": ["lifestyle", "health"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

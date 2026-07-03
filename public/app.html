@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Doze — one-button sleep tracker</title>
+<meta name="theme-color" content="#141327">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --night:#141327;--night2:#1d1b38;--star:#f5edda;--moon:#ffd98a;
+    --lavender:#a99ee0;--good:#8fd6a8;--warn:#f0b27a;--dim:#8b87a8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    background:radial-gradient(120% 90% at 50% 0%, var(--night2) 0%, var(--night) 60%);
+    color:var(--star);font-family:'Nunito',system-ui,sans-serif;
+    display:flex;flex-direction:column;align-items:center;
+    min-height:100vh;padding:20px 16px 40px;
+  }
+  .app{width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center}
+  h1{font-family:'Fraunces',serif;font-weight:700;font-size:26px;margin-top:6px}
+  .sub{color:var(--dim);font-size:13px;margin-top:2px;text-align:center}
+
+  /* ---------- auth ---------- */
+  .auth{display:none;width:100%;margin-top:40px}
+  .auth.on{display:block}
+  .auth .card{margin-top:0}
+  .auth input{
+    width:100%;background:var(--night2);border:1px solid rgba(255,255,255,0.15);
+    border-radius:10px;padding:14px;color:var(--star);
+    font-family:'Nunito',sans-serif;font-size:16px;margin-top:12px;
+  }
+  .auth input:focus-visible{outline:2px solid var(--star)}
+  .auth button{
+    width:100%;margin-top:12px;border:none;border-radius:12px;padding:15px;
+    background:var(--moon);color:var(--night);
+    font-family:'Nunito',sans-serif;font-weight:800;font-size:16px;cursor:pointer;
+  }
+  .auth .note{font-size:12.5px;color:var(--dim);margin-top:12px;line-height:1.5}
+  .auth .sent{display:none;color:var(--good);font-size:14px;margin-top:12px;line-height:1.5}
+
+  /* ---------- main app ---------- */
+  .tracker{display:none;width:100%;flex-direction:column;align-items:center}
+  .tracker.on{display:flex}
+
+  .big-wrap{margin:30px 0 6px}
+  .big{
+    width:min(240px,62vw);height:min(240px,62vw);border-radius:50%;
+    border:none;cursor:pointer;
+    font-family:'Fraunces',serif;font-weight:700;font-size:24px;color:var(--night);
+    background:radial-gradient(circle at 35% 30%, #fff3cf, var(--moon) 70%);
+    box-shadow:0 0 60px rgba(255,217,138,0.25), inset 0 -8px 20px rgba(0,0,0,0.12);
+    transition:transform .1s ease;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  }
+  .big:active{transform:scale(0.965)}
+  .big:disabled{opacity:0.6;cursor:wait}
+  .big .icon{font-size:44px;line-height:1}
+  .btn-sub{
+    display:block;font-family:'Nunito',sans-serif;font-weight:700;
+    font-size:12.5px;opacity:0.75;margin-top:4px;
+  }
+  .big.sleeping{
+    background:radial-gradient(circle at 35% 30%, #cfc6f5, var(--lavender) 70%);
+    box-shadow:0 0 70px rgba(169,158,224,0.35), inset 0 -8px 20px rgba(0,0,0,0.15);
+    animation:breathe 4s ease-in-out infinite;
+  }
+  @keyframes breathe{
+    0%,100%{box-shadow:0 0 50px rgba(169,158,224,0.25), inset 0 -8px 20px rgba(0,0,0,0.15)}
+    50%{box-shadow:0 0 90px rgba(169,158,224,0.45), inset 0 -8px 20px rgba(0,0,0,0.15)}
+  }
+  @media (prefers-reduced-motion:reduce){.big.sleeping{animation:none}}
+  .big:focus-visible{outline:3px solid var(--star);outline-offset:6px}
+
+  .since{font-size:14px;color:var(--dim);min-height:22px;margin-top:10px;text-align:center}
+  .sync{font-size:11.5px;color:var(--dim);min-height:16px;margin-top:2px}
+  .sync.err{color:var(--warn)}
+  .undo{
+    background:none;border:none;color:var(--dim);text-decoration:underline;
+    font-family:'Nunito',sans-serif;font-size:13px;cursor:pointer;margin-top:6px;display:none;
+  }
+  .undo.on{display:inline}
+
+  .card{
+    width:100%;background:rgba(255,255,255,0.045);
+    border:1px solid rgba(255,255,255,0.08);border-radius:18px;
+    padding:18px;margin-top:22px;
+  }
+  .card h2{
+    font-family:'Fraunces',serif;font-weight:500;font-size:16px;
+    color:var(--dim);margin-bottom:10px;
+  }
+  .total{font-family:'Fraunces',serif;font-weight:700;font-size:34px;font-variant-numeric:tabular-nums}
+  .total small{font-size:16px;color:var(--dim);font-weight:500}
+  .target{margin-top:6px;font-size:14px;line-height:1.5}
+  .target.good{color:var(--good)}
+  .target.low{color:var(--warn)}
+  .meter{height:9px;background:rgba(255,255,255,0.08);border-radius:99px;margin-top:12px;overflow:hidden}
+  .meter i{display:block;height:100%;border-radius:99px;background:var(--lavender);transition:width .5s ease}
+
+  .week{display:flex;gap:6px;align-items:flex-end;height:88px;margin-top:14px}
+  .day{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
+  .day .col{width:100%;background:rgba(255,255,255,0.08);border-radius:6px 6px 3px 3px;position:relative;height:64px;overflow:hidden}
+  .day .col i{position:absolute;bottom:0;left:0;right:0;background:var(--lavender);border-radius:6px 6px 0 0}
+  .day .col i.met{background:var(--good)}
+  .day span{font-size:10.5px;color:var(--dim);font-weight:600}
+
+  /* history dashboard */
+  .hist-day{border-top:1px solid rgba(255,255,255,0.07);padding:12px 0}
+  .hist-day:first-of-type{border-top:none;padding-top:2px}
+  .hist-head{display:flex;justify-content:space-between;font-size:14px;font-weight:800}
+  .hist-head .h{font-variant-numeric:tabular-nums}
+  .hist-head .h.good{color:var(--good)}
+  .hist-head .h.low{color:var(--warn)}
+  .hist-sessions{font-size:12.5px;color:var(--dim);margin-top:3px;line-height:1.6}
+
+  .tip{margin-top:12px;font-size:13.5px;color:var(--dim);line-height:1.55}
+  .tip b{color:var(--star)}
+
+  .age-row{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    margin-top:22px;width:100%;font-size:13px;color:var(--dim);
+  }
+  select{
+    background:var(--night2);color:var(--star);border:1px solid rgba(255,255,255,0.15);
+    border-radius:8px;padding:7px 10px;font-family:'Nunito',sans-serif;font-size:13px;
+  }
+  select:focus-visible{outline:2px solid var(--star)}
+  footer{margin-top:26px;font-size:11px;color:var(--dim);text-align:center;max-width:340px;line-height:1.6}
+  footer button{
+    background:none;border:none;color:var(--dim);text-decoration:underline;
+    font-family:'Nunito',sans-serif;font-size:11px;cursor:pointer;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>Doze</h1>
+  <div class="sub" id="subTitle">Press once asleep · press once awake</div>
+
+  <!-- one-time login -->
+  <div class="auth" id="auth">
+    <div class="card">
+      <h2>One-time setup</h2>
+      <p style="font-size:14px;line-height:1.6">Enter your email and we'll send a login link — <b>no password, ever</b>. You'll only do this once per device. After that it's just the button.</p>
+      <input type="email" id="email" placeholder="you@example.com" autocomplete="email" inputmode="email">
+      <button id="sendLink">Send me the link</button>
+      <p class="sent" id="sent">Link sent ✓ — check your email on this device and tap it. You can close this page.</p>
+      <p class="note">Tip: both parents can use the <b>same email</b> to share one baby's data across two phones.</p>
+    </div>
+  </div>
+
+  <!-- tracker -->
+  <div class="tracker" id="tracker">
+    <div class="big-wrap">
+      <button class="big" id="btn" aria-live="polite">
+        <span class="icon" id="btnIcon">☀️</span>
+        <span id="btnText">Awake</span>
+      </button>
+    </div>
+    <div class="since" id="since"></div>
+    <div class="sync" id="sync"></div>
+    <button class="undo" id="undo">undo last press</button>
+
+    <div class="card">
+      <h2>Sleep in the last 24 h</h2>
+      <div class="total" id="total">0<small> h</small></div>
+      <div class="target" id="target"></div>
+      <div class="meter"><i id="meterFill"></i></div>
+    </div>
+
+    <div class="card">
+      <h2>This week</h2>
+      <div class="week" id="week"></div>
+      <p class="tip" id="tip"></p>
+    </div>
+
+    <div class="card">
+      <h2>History</h2>
+      <div id="history"></div>
+    </div>
+
+    <div class="age-row">
+      <span>Child's age (sets the recommended range)</span>
+      <select id="age">
+        <option value="infant">4–12 months</option>
+        <option value="toddler" selected>1–2 years</option>
+        <option value="preschool">3–5 years</option>
+        <option value="school">6–12 years</option>
+        <option value="teen">13–18 years</option>
+      </select>
+    </div>
+  </div>
+
+  <footer>
+    Recommended ranges follow paediatric sleep guidance (incl. naps per 24 h). A gentle guide, not medical advice.
+    <span id="footAuth" style="display:none"><br><span id="whoami"></span> · <button id="signOut">sign out</button></span>
+  </footer>
+</div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+// ── EDIT THESE TWO LINES (Supabase → Project → Settings → API) ──────────────
+const SUPABASE_URL = 'https://YOUR-PROJECT-REF.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR-ANON-PUBLIC-KEY';
+// ─────────────────────────────────────────────────────────────────────────────
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const RANGES = {
+  infant:{min:12,max:16,label:'12–16 h'}, toddler:{min:11,max:14,label:'11–14 h'},
+  preschool:{min:10,max:13,label:'10–13 h'}, school:{min:9,max:12,label:'9–12 h'},
+  teen:{min:8,max:10,label:'8–10 h'}
+};
+const TIPS = {
+  low:["A consistent wind-down 30 min before bed (bath, book, dim lights) helps kids fall asleep faster.",
+       "Short on sleep today — an earlier bedtime tonight beats a long lie-in tomorrow.",
+       "Screens off an hour before bed makes a measurable difference to how quickly children drop off."],
+  good:["Right in the healthy range — keep bed and wake times consistent, even weekends.",
+        "On track. A consistent wake-up time is the anchor that keeps the whole schedule steady.",
+        "Great — a dark, cool room (16–20°C) helps keep sleep this solid."],
+  high:["Above the typical range — usually fine, but if it's a pattern alongside daytime tiredness, worth mentioning at the next check-up."]
+};
+
+const $ = id => document.getElementById(id);
+let user = null;
+let sessions = [];     // {id, start_ms, end_ms|null}
+let age = 'toddler';
+let lastAction = null; // {type:'sleep'|'wake', id, prevEnd?}
+let ticker = null;
+
+// ── auth ──
+async function init(){
+  const { data:{ session } } = await supabase.auth.getSession();
+  if(session){ user = session.user; enterApp(); }
+  else { $('auth').classList.add('on'); $('subTitle').textContent = 'The one-button sleep tracker'; }
+
+  supabase.auth.onAuthStateChange((_e, s) => {
+    if(s && !user){ user = s.user; location.hash=''; enterApp(); }
+  });
+}
+
+$('sendLink').addEventListener('click', async () => {
+  const email = $('email').value.trim();
+  if(!email.includes('@')) return;
+  const { error } = await supabase.auth.signInWithOtp({
+    email, options:{ emailRedirectTo: location.origin + '/app.html' }
+  });
+  if(error){ alert(error.message); return; }
+  $('sent').style.display = 'block';
+});
+
+$('signOut').addEventListener('click', async () => {
+  await supabase.auth.signOut(); location.reload();
+});
+
+async function enterApp(){
+  $('auth').classList.remove('on');
+  $('tracker').classList.add('on');
+  $('footAuth').style.display = 'inline';
+  $('whoami').textContent = user.email;
+  $('subTitle').textContent = 'Press once asleep · press once awake';
+  await loadData();
+  render();
+  // ask browser to protect local cache from eviction
+  if(navigator.storage?.persist) navigator.storage.persist();
+}
+
+// ── data ──
+async function loadData(){
+  setSync('syncing…');
+  const cutoff = Date.now() - 30*86400000;
+  const [sess, sett] = await Promise.all([
+    supabase.from('doze_sessions').select('*').gte('start_ms', cutoff).order('start_ms'),
+    supabase.from('doze_settings').select('*').maybeSingle()
+  ]);
+  if(sess.error){ setSync('offline — showing cached data', true); const c = cache(); sessions = c.sessions; age = c.age; return; }
+  sessions = sess.data || [];
+  age = sett.data?.age || 'toddler';
+  $('age').value = age;
+  saveCache();
+  setSync('synced ✓');
+  setTimeout(()=>setSync(''), 2000);
+}
+
+function cache(){ try{ return JSON.parse(localStorage.getItem('doze-cache')) || {sessions:[],age:'toddler'}; }catch{ return {sessions:[],age:'toddler'}; } }
+function saveCache(){ localStorage.setItem('doze-cache', JSON.stringify({sessions, age})); }
+function setSync(msg, err){ const s=$('sync'); s.textContent=msg||''; s.className='sync'+(err?' err':''); }
+
+const openSession = () => sessions.find(s => s.end_ms == null);
+
+// ── the button ──
+$('btn').addEventListener('click', async () => {
+  const btn = $('btn'); btn.disabled = true;
+  const now = Date.now();
+  const open = openSession();
+  try{
+    if(open){
+      if(now - open.start_ms < 60000){
+        // accidental double-press: delete
+        await supabase.from('doze_sessions').delete().eq('id', open.id);
+        sessions = sessions.filter(s => s.id !== open.id);
+        lastAction = null;
+      }else{
+        const { error } = await supabase.from('doze_sessions').update({end_ms: now}).eq('id', open.id);
+        if(error) throw error;
+        open.end_ms = now;
+        lastAction = {type:'wake', id: open.id};
+      }
+    }else{
+      const { data, error } = await supabase.from('doze_sessions')
+        .insert({start_ms: now, user_id: user.id}).select().single();
+      if(error) throw error;
+      sessions.push(data);
+      lastAction = {type:'sleep', id: data.id};
+    }
+    saveCache(); setSync('synced ✓'); setTimeout(()=>setSync(''),1500);
+  }catch(e){
+    console.error(e); setSync('couldn\'t sync — check connection and press again', true);
+  }
+  btn.disabled = false;
+  render();
+});
+
+$('undo').addEventListener('click', async () => {
+  if(!lastAction) return;
+  try{
+    if(lastAction.type === 'sleep'){
+      await supabase.from('doze_sessions').delete().eq('id', lastAction.id);
+      sessions = sessions.filter(s => s.id !== lastAction.id);
+    }else{
+      await supabase.from('doze_sessions').update({end_ms: null}).eq('id', lastAction.id);
+      const s = sessions.find(x => x.id === lastAction.id); if(s) s.end_ms = null;
+    }
+    lastAction = null; saveCache();
+  }catch(e){ setSync('undo failed — check connection', true); }
+  render();
+});
+
+$('age').addEventListener('change', async e => {
+  age = e.target.value;
+  saveCache();
+  await supabase.from('doze_settings').upsert({user_id: user.id, age});
+  render();
+});
+
+// ── maths ──
+function hoursIn(fromMs, toMs){
+  let ms = 0; const now = Date.now();
+  for(const s of sessions){
+    const end = s.end_ms ?? now;
+    const a = Math.max(s.start_ms, fromMs), b = Math.min(end, toMs);
+    if(b > a) ms += b - a;
+  }
+  return ms / 3600000;
+}
+function fmt(h){
+  let M = Math.round(h*60); const H = Math.floor(M/60); M = M%60;
+  return M ? `${H} h ${M} m` : `${H} h`;
+}
+const tf = ms => new Date(ms).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+
+// ── render ──
+function render(){
+  const btn = $('btn'), r = RANGES[age];
+  const open = openSession();
+
+  clearInterval(ticker);
+  const tick = () => {
+    const o = openSession();
+    if(o){
+      btn.classList.add('sleeping');
+      $('btnIcon').textContent = '🌙';
+      const mins = Math.floor((Date.now() - o.start_ms)/60000);
+      const h = Math.floor(mins/60), m = mins%60;
+      $('btnText').innerHTML = `Asleep<span class="btn-sub">${h ? h+' h ' : ''}${m} m · press when they wake</span>`;
+      $('since').textContent = '';
+    }else{
+      btn.classList.remove('sleeping');
+      $('btnIcon').textContent = '☀️';
+      $('btnText').innerHTML = `Awake<span class="btn-sub">press when they fall asleep</span>`;
+      $('since').textContent = sessions.length ? '' : 'Press the sun when they fall asleep';
+    }
+  };
+  tick();
+  if(open) ticker = setInterval(tick, 30000);
+  $('undo').classList.toggle('on', !!lastAction);
+
+  // 24h total
+  const now = Date.now();
+  const h24 = hoursIn(now - 86400000, now);
+  $('total').innerHTML = fmt(h24);
+  const t = $('target');
+  $('meterFill').style.width = Math.min(100, (h24/r.max)*100) + '%';
+  let band;
+  if(h24 >= r.min && h24 <= r.max + 1){ band='good'; t.className='target good'; t.textContent=`Within the recommended ${r.label} for this age ✓`; }
+  else if(h24 < r.min){ band='low'; t.className='target low'; t.textContent=`About ${fmt(r.min - h24)} under the recommended ${r.label}`; }
+  else { band='high'; t.className='target good'; t.textContent=`Above the typical ${r.label} — usually nothing to worry about`; }
+
+  // week bars
+  const week = $('week'); week.innerHTML = '';
+  const dn = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  for(let i=6;i>=0;i--){
+    const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-i);
+    const from = d.getTime(), h = hoursIn(from, from+86400000);
+    const el = document.createElement('div'); el.className='day';
+    el.innerHTML = `<div class="col"><i class="${h>=r.min?'met':''}" style="height:${Math.min(100,(h/r.max)*100)}%"></i></div>
+      <span>${i===0?'Today':dn[d.getDay()]}</span>`;
+    week.appendChild(el);
+  }
+
+  // history dashboard: last 7 days, newest first, with session times
+  const hist = $('history'); hist.innerHTML = '';
+  for(let i=0;i<7;i++){
+    const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-i);
+    const from = d.getTime(), to = from+86400000;
+    const h = hoursIn(from, to);
+    const daySessions = sessions
+      .filter(s => (s.end_ms ?? now) > from && s.start_ms < to)
+      .map(s => `${tf(Math.max(s.start_ms,from))}–${s.end_ms ? tf(Math.min(s.end_ms,to)) : 'now'}`);
+    if(i>0 && daySessions.length===0) continue;
+    const label = i===0 ? 'Today' : i===1 ? 'Yesterday' : d.toLocaleDateString([], {weekday:'short', day:'numeric', month:'short'});
+    const el = document.createElement('div'); el.className='hist-day';
+    el.innerHTML = `<div class="hist-head"><span>${label}</span><span class="h ${h>=r.min?'good':'low'}">${fmt(h)}</span></div>
+      <div class="hist-sessions">${daySessions.join(' · ') || 'no sleep logged'}</div>`;
+    hist.appendChild(el);
+  }
+  if(!hist.children.length) hist.innerHTML = '<div class="hist-sessions">Sessions will appear here once you start pressing the button.</div>';
+
+  // tip
+  const pool = TIPS[band] || TIPS.good;
+  $('tip').innerHTML = `<b>Tip:</b> ${pool[new Date().getDate() % pool.length]}`;
+}
+
+init();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
+}
+</script>
+</body>
+</html>
