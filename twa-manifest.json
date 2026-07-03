@@ -1,0 +1,20 @@
+{
+  "packageId": "org.doze.app",
+  "host": "REPLACE-WITH-YOUR-DOMAIN e.g. doze.vercel.app or getdoze.co.uk",
+  "name": "Doze — kids sleep tracker",
+  "launcherName": "Doze",
+  "display": "standalone",
+  "themeColor": "#141327",
+  "navigationColor": "#141327",
+  "backgroundColor": "#141327",
+  "startUrl": "/app.html",
+  "iconUrl": "https://REPLACE-WITH-YOUR-DOMAIN/icon-512.png",
+  "maskableIconUrl": "https://REPLACE-WITH-YOUR-DOMAIN/icon-maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "enableNotifications": false,
+  "isChromeOSOnly": false,
+  "orientation": "portrait",
+  "fingerprints": [],
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1
+}
