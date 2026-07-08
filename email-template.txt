@@ -1,0 +1,44 @@
+Doze — Supabase email template
+================================
+
+Where to paste this:
+  Supabase → Authentication → Emails → "Magic Link" template
+  (Custom SMTP must be ON, which it now is — so the editor is unlocked.)
+
+Also do this so the CODE email is the one that sends:
+  Authentication → Sign In / Providers → Email →
+  turn OFF "Confirm email" (so sign-ins use the Magic Link email, which carries the code)
+
+------------------------------------------------------------
+SUBJECT:
+------------------------------------------------------------
+Your Doze code: {{ .Token }}
+
+------------------------------------------------------------
+MESSAGE BODY (HTML) — paste the whole block:
+------------------------------------------------------------
+<div style="background:#141327;padding:40px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#f5edda">
+  <div style="max-width:420px;margin:0 auto;text-align:center">
+    <div style="font-size:40px;line-height:1">🌙</div>
+    <h1 style="font-family:Georgia,serif;font-weight:700;font-size:26px;margin:12px 0 4px;color:#f5edda">Doze</h1>
+    <p style="color:#a99ee0;font-size:14px;margin:0 0 28px">The one-button sleep tracker</p>
+
+    <p style="font-size:15px;line-height:1.6;color:#d8d4ea;margin:0 0 20px">
+      Here's your sign-in code. Type it into Doze to save and sync your sleep data.
+    </p>
+
+    <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:22px;margin:0 0 24px">
+      <div style="font-size:34px;font-weight:700;letter-spacing:0.35em;color:#ffd98a;font-family:'SF Mono',Menlo,monospace">
+        {{ .Token }}
+      </div>
+    </div>
+
+    <p style="font-size:12.5px;line-height:1.6;color:#8b87a8;margin:0">
+      This code expires shortly and only works once. If you didn't request it, you can ignore this email — nothing will happen.
+    </p>
+  </div>
+</div>
+------------------------------------------------------------
+
+The important bit is {{ .Token }} — that's the 6-digit code. Keep it exactly.
+Everything else is styling you can change freely.
