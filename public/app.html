@@ -147,10 +147,17 @@
   <div class="auth" id="auth">
     <div class="card">
       <h2>One-time setup</h2>
-      <p style="font-size:14px;line-height:1.6">Enter your email and we'll send a login link — <b>no password, ever</b>. You'll only do this once per device. After that it's just the button.</p>
+      <p style="font-size:14px;line-height:1.6">Enter your email and we'll send a 6-digit code — <b>no password, ever</b>. This just saves your data so nothing gets lost; it's not used for anything else. You'll only do this once per device.</p>
       <input type="email" id="email" placeholder="you@example.com" autocomplete="email" inputmode="email">
-      <button id="sendLink">Send me the link</button>
-      <p class="sent" id="sent">Link sent ✓ — check your email on this device and tap it. You can close this page.</p>
+      <button id="sendLink">Email me a 6-digit code</button>
+
+      <div id="codeStep" style="display:none">
+        <p class="sent" style="display:block">Code sent ✓ — check your email and type the 6 digits here:</p>
+        <input type="text" id="code" placeholder="123456" inputmode="numeric" autocomplete="one-time-code" maxlength="6" style="letter-spacing:0.3em;text-align:center;font-size:22px">
+        <button id="verifyCode">Sign in</button>
+        <p class="note" id="codeErr" style="color:var(--warn);display:none"></p>
+      </div>
+
       <p class="note">Tip: both parents can use the <b>same email</b> to share one baby's data across two phones.</p>
     </div>
   </div>
@@ -207,11 +214,18 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
 // ── EDIT THESE TWO LINES (Supabase → Project → Settings → API) ──────────────
-const SUPABASE_URL = 'https://mcnugodkatucjawtmcis.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jbnVnb2RrYXR1Y2phd3RtY2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNzYzNDMsImV4cCI6MjA5ODY1MjM0M30.-yDkAILx4fBFltSiS-FKV3dARnamj0b7mwdUnM_f_So';
+const SUPABASE_URL = 'https://YOUR-PROJECT-REF.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR-ANON-PUBLIC-KEY';
 // ─────────────────────────────────────────────────────────────────────────────
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    storage: window.localStorage
+  }
+});
 
 const RANGES = {
   infant:{min:12,max:16,label:'12–16 h'}, toddler:{min:11,max:14,label:'11–14 h'},
@@ -246,14 +260,36 @@ async function init(){
   });
 }
 
+let pendingEmail = '';
+
 $('sendLink').addEventListener('click', async () => {
   const email = $('email').value.trim();
   if(!email.includes('@')) return;
-  const { error } = await supabase.auth.signInWithOtp({
-    email, options:{ emailRedirectTo: location.origin + '/app.html' }
-  });
+  $('sendLink').disabled = true;
+  $('sendLink').textContent = 'Sending…';
+  const { error } = await supabase.auth.signInWithOtp({ email });
+  $('sendLink').disabled = false;
+  $('sendLink').textContent = 'Email me a 6-digit code';
   if(error){ alert(error.message); return; }
-  $('sent').style.display = 'block';
+  pendingEmail = email;
+  $('codeStep').style.display = 'block';
+  $('code').focus();
+});
+
+$('verifyCode').addEventListener('click', async () => {
+  const token = $('code').value.trim();
+  if(token.length < 6) return;
+  $('verifyCode').disabled = true;
+  const { data, error } = await supabase.auth.verifyOtp({
+    email: pendingEmail, token, type: 'email'
+  });
+  $('verifyCode').disabled = false;
+  if(error){
+    const e = $('codeErr'); e.style.display = 'block';
+    e.textContent = 'That code didn\'t work — check it or send a new one.';
+    return;
+  }
+  if(data.session){ user = data.session.user; enterApp(); }
 });
 
 $('signOut').addEventListener('click', async () => {
