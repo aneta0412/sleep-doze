@@ -20,16 +20,15 @@
     background:radial-gradient(120% 90% at 50% 0%, var(--night2) 0%, var(--night) 60%);
     color:var(--star);font-family:'Nunito',system-ui,sans-serif;
     display:flex;flex-direction:column;align-items:center;
-    min-height:100vh;padding:20px 16px 40px;
+    min-height:100vh;padding:18px 16px 40px;
   }
   .app{width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center}
-  h1{font-family:'Fraunces',serif;font-weight:700;font-size:26px;margin-top:6px}
+  h1{font-family:'Fraunces',serif;font-weight:700;font-size:24px;margin-top:4px}
   .sub{color:var(--dim);font-size:13px;margin-top:2px;text-align:center}
 
   /* ---------- auth ---------- */
-  .auth{display:none;width:100%;margin-top:40px}
+  .auth{display:none;width:100%;margin-top:36px}
   .auth.on{display:block}
-  .auth .card{margin-top:0}
   .auth input{
     width:100%;background:var(--night2);border:1px solid rgba(255,255,255,0.15);
     border-radius:10px;padding:14px;color:var(--star);
@@ -42,28 +41,39 @@
     font-family:'Nunito',sans-serif;font-weight:800;font-size:16px;cursor:pointer;
   }
   .auth .note{font-size:12.5px;color:var(--dim);margin-top:12px;line-height:1.5}
-  .auth .sent{display:none;color:var(--good);font-size:14px;margin-top:12px;line-height:1.5}
+  .sent{color:var(--good);font-size:14px;margin-top:12px;line-height:1.5}
 
-  /* ---------- main app ---------- */
+  /* ---------- kids switcher ---------- */
+  .kids{display:none;gap:8px;margin-top:16px;flex-wrap:wrap;justify-content:center}
+  .kids.on{display:flex}
+  .kid{
+    border:1px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.05);
+    color:var(--star);border-radius:99px;padding:8px 16px;
+    font-family:'Nunito',sans-serif;font-weight:700;font-size:14px;cursor:pointer;
+  }
+  .kid.active{background:var(--moon);color:var(--night);border-color:var(--moon)}
+  .kid.add{border-style:dashed;color:var(--dim)}
+
+  /* ---------- tracker ---------- */
   .tracker{display:none;width:100%;flex-direction:column;align-items:center}
   .tracker.on{display:flex}
 
-  .big-wrap{margin:30px 0 6px}
+  .big-wrap{margin:24px 0 4px;position:relative}
   .big{
-    width:min(240px,62vw);height:min(240px,62vw);border-radius:50%;
+    width:min(230px,60vw);height:min(230px,60vw);border-radius:50%;
     border:none;cursor:pointer;
     font-family:'Fraunces',serif;font-weight:700;font-size:24px;color:var(--night);
     background:radial-gradient(circle at 35% 30%, #fff3cf, var(--moon) 70%);
     box-shadow:0 0 60px rgba(255,217,138,0.25), inset 0 -8px 20px rgba(0,0,0,0.12);
     transition:transform .1s ease;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
   }
-  .big:active{transform:scale(0.965)}
-  .big:disabled{opacity:0.6;cursor:wait}
-  .big .icon{font-size:44px;line-height:1}
+  .big:active{transform:scale(0.96)}
+  .big:disabled{opacity:0.65;cursor:wait}
+  .big .icon{font-size:40px;line-height:1}
   .btn-sub{
     display:block;font-family:'Nunito',sans-serif;font-weight:700;
-    font-size:12.5px;opacity:0.75;margin-top:4px;
+    font-size:12px;opacity:0.78;margin-top:2px;
   }
   .big.sleeping{
     background:radial-gradient(circle at 35% 30%, #cfc6f5, var(--lavender) 70%);
@@ -77,8 +87,16 @@
   @media (prefers-reduced-motion:reduce){.big.sleeping{animation:none}}
   .big:focus-visible{outline:3px solid var(--star);outline-offset:6px}
 
-  .since{font-size:14px;color:var(--dim);min-height:22px;margin-top:10px;text-align:center}
-  .sync{font-size:11.5px;color:var(--dim);min-height:16px;margin-top:2px}
+  /* the always-visible log line: "Started 20:45 · asleep 35 m" */
+  .logline{
+    margin-top:14px;text-align:center;
+    font-size:16px;font-weight:800;letter-spacing:0.01em;
+    min-height:24px;font-variant-numeric:tabular-nums;
+  }
+  .logline .lav{color:var(--lavender)}
+  .logline .sun{color:var(--moon)}
+  .sync{font-size:12px;color:var(--dim);min-height:18px;margin-top:4px;font-weight:700}
+  .sync.ok{color:var(--good)}
   .sync.err{color:var(--warn)}
   .undo{
     background:none;border:none;color:var(--dim);text-decoration:underline;
@@ -89,49 +107,59 @@
   .card{
     width:100%;background:rgba(255,255,255,0.045);
     border:1px solid rgba(255,255,255,0.08);border-radius:18px;
-    padding:18px;margin-top:22px;
+    padding:18px;margin-top:20px;
   }
   .card h2{
-    font-family:'Fraunces',serif;font-weight:500;font-size:16px;
+    font-family:'Fraunces',serif;font-weight:500;font-size:15px;
     color:var(--dim);margin-bottom:10px;
   }
-  .total{font-family:'Fraunces',serif;font-weight:700;font-size:34px;font-variant-numeric:tabular-nums}
-  .total small{font-size:16px;color:var(--dim);font-weight:500}
-  .target{margin-top:6px;font-size:14px;line-height:1.5}
+
+  /* 24h — big clear numbers */
+  .total{
+    font-family:'Fraunces',serif;font-weight:700;font-size:44px;line-height:1;
+    font-variant-numeric:tabular-nums;
+  }
+  .total small{font-size:17px;color:var(--dim);font-weight:500}
+  .target{margin-top:8px;font-size:15px;font-weight:700;line-height:1.5}
   .target.good{color:var(--good)}
   .target.low{color:var(--warn)}
-  .meter{height:9px;background:rgba(255,255,255,0.08);border-radius:99px;margin-top:12px;overflow:hidden}
-  .meter i{display:block;height:100%;border-radius:99px;background:var(--lavender);transition:width .5s ease}
+  .range-bar{position:relative;height:14px;background:rgba(255,255,255,0.08);border-radius:99px;margin-top:14px}
+  .range-zone{position:absolute;top:0;bottom:0;background:rgba(143,214,168,0.22);border-left:2px solid var(--good);border-right:2px solid var(--good)}
+  .range-fill{position:absolute;top:2px;bottom:2px;left:2px;background:var(--lavender);border-radius:99px;transition:width .5s ease;max-width:calc(100% - 4px)}
+  .range-fill.met{background:var(--good)}
+  .range-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-top:6px;font-weight:700}
 
-  .week{display:flex;gap:6px;align-items:flex-end;height:88px;margin-top:14px}
-  .day{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
-  .day .col{width:100%;background:rgba(255,255,255,0.08);border-radius:6px 6px 3px 3px;position:relative;height:64px;overflow:hidden}
+  /* week bars with hour labels */
+  .week{display:flex;gap:6px;align-items:flex-end;height:110px;margin-top:12px}
+  .day{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+  .day .val{font-size:10.5px;color:var(--star);font-weight:800;font-variant-numeric:tabular-nums}
+  .day .col{width:100%;background:rgba(255,255,255,0.08);border-radius:6px 6px 3px 3px;position:relative;height:70px;overflow:hidden}
   .day .col i{position:absolute;bottom:0;left:0;right:0;background:var(--lavender);border-radius:6px 6px 0 0}
   .day .col i.met{background:var(--good)}
-  .day span{font-size:10.5px;color:var(--dim);font-weight:600}
+  .day span{font-size:10.5px;color:var(--dim);font-weight:700}
 
-  /* history dashboard */
   .hist-day{border-top:1px solid rgba(255,255,255,0.07);padding:12px 0}
   .hist-day:first-of-type{border-top:none;padding-top:2px}
-  .hist-head{display:flex;justify-content:space-between;font-size:14px;font-weight:800}
+  .hist-head{display:flex;justify-content:space-between;font-size:14.5px;font-weight:800}
   .hist-head .h{font-variant-numeric:tabular-nums}
   .hist-head .h.good{color:var(--good)}
   .hist-head .h.low{color:var(--warn)}
-  .hist-sessions{font-size:12.5px;color:var(--dim);margin-top:3px;line-height:1.6}
+  .hist-sessions{font-size:12.5px;color:var(--dim);margin-top:4px;line-height:1.7}
+  .hist-sessions b{color:var(--star);font-weight:700}
 
   .tip{margin-top:12px;font-size:13.5px;color:var(--dim);line-height:1.55}
   .tip b{color:var(--star)}
 
   .age-row{
     display:flex;align-items:center;justify-content:space-between;gap:10px;
-    margin-top:22px;width:100%;font-size:13px;color:var(--dim);
+    margin-top:20px;width:100%;font-size:13px;color:var(--dim);
   }
   select{
     background:var(--night2);color:var(--star);border:1px solid rgba(255,255,255,0.15);
     border-radius:8px;padding:7px 10px;font-family:'Nunito',sans-serif;font-size:13px;
   }
   select:focus-visible{outline:2px solid var(--star)}
-  footer{margin-top:26px;font-size:11px;color:var(--dim);text-align:center;max-width:340px;line-height:1.6}
+  footer{margin-top:24px;font-size:11px;color:var(--dim);text-align:center;max-width:340px;line-height:1.6}
   footer button{
     background:none;border:none;color:var(--dim);text-decoration:underline;
     font-family:'Nunito',sans-serif;font-size:11px;cursor:pointer;
@@ -150,17 +178,18 @@
       <p style="font-size:14px;line-height:1.6">Enter your email and we'll send a 6-digit code — <b>no password, ever</b>. This just saves your data so nothing gets lost; it's not used for anything else. You'll only do this once per device.</p>
       <input type="email" id="email" placeholder="you@example.com" autocomplete="email" inputmode="email">
       <button id="sendLink">Email me a 6-digit code</button>
-
       <div id="codeStep" style="display:none">
-        <p class="sent" style="display:block">Code sent ✓ — check your email and type the 6 digits here:</p>
+        <p class="sent">Code sent ✓ — check your email and type the 6 digits here:</p>
         <input type="text" id="code" placeholder="123456" inputmode="numeric" autocomplete="one-time-code" maxlength="6" style="letter-spacing:0.3em;text-align:center;font-size:22px">
         <button id="verifyCode">Sign in</button>
         <p class="note" id="codeErr" style="color:var(--warn);display:none"></p>
       </div>
-
-      <p class="note">Tip: both parents can use the <b>same email</b> to share one baby's data across two phones.</p>
+      <p class="note">Tip: both parents can use the <b>same email</b> to share the same children across two phones.</p>
     </div>
   </div>
+
+  <!-- child switcher -->
+  <div class="kids" id="kids"></div>
 
   <!-- tracker -->
   <div class="tracker" id="tracker">
@@ -170,7 +199,7 @@
         <span id="btnText">Awake</span>
       </button>
     </div>
-    <div class="since" id="since"></div>
+    <div class="logline" id="logline"></div>
     <div class="sync" id="sync"></div>
     <button class="undo" id="undo">undo last press</button>
 
@@ -178,11 +207,15 @@
       <h2>Sleep in the last 24 h</h2>
       <div class="total" id="total">0<small> h</small></div>
       <div class="target" id="target"></div>
-      <div class="meter"><i id="meterFill"></i></div>
+      <div class="range-bar" id="rangeBar">
+        <div class="range-zone" id="rangeZone"></div>
+        <div class="range-fill" id="rangeFill"></div>
+      </div>
+      <div class="range-labels"><span>0 h</span><span id="rangeMid"></span><span id="rangeMax"></span></div>
     </div>
 
     <div class="card">
-      <h2>This week</h2>
+      <h2>This week — hours per day</h2>
       <div class="week" id="week"></div>
       <p class="tip" id="tip"></p>
     </div>
@@ -193,7 +226,7 @@
     </div>
 
     <div class="age-row">
-      <span>Child's age (sets the recommended range)</span>
+      <span id="ageLabel">Age (sets the recommended range)</span>
       <select id="age">
         <option value="infant">4–12 months</option>
         <option value="toddler" selected>1–2 years</option>
@@ -213,18 +246,13 @@
 <script type="module">
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-// ── EDIT THESE TWO LINES (Supabase → Project → Settings → API) ──────────────
-const SUPABASE_URL = 'https://YOUR-PROJECT-REF.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR-ANON-PUBLIC-KEY';
+// ── EDIT THESE TWO LINES (Supabase → Project Settings → API) ────────────────
+const SUPABASE_URL = 'https://mcnugodkatucjawtmcis.supabase.co';
+const SUPABASE_ANON_KEY = 'PASTE-YOUR-eyJ...-ANON-KEY-HERE';
 // ─────────────────────────────────────────────────────────────────────────────
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-    storage: window.localStorage
-  }
+  auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, storage:window.localStorage }
 });
 
 const RANGES = {
@@ -244,152 +272,221 @@ const TIPS = {
 
 const $ = id => document.getElementById(id);
 let user = null;
-let sessions = [];     // {id, start_ms, end_ms|null}
-let age = 'toddler';
-let lastAction = null; // {type:'sleep'|'wake', id, prevEnd?}
+let children = [];        // {id, name, age}
+let activeChild = null;   // id
+let sessions = [];        // {id, child_id, start_ms, end_ms|null}
+let lastAction = null;
 let ticker = null;
 
-// ── auth ──
+/* ══════════ auth ══════════ */
 async function init(){
   const { data:{ session } } = await supabase.auth.getSession();
-  if(session){ user = session.user; enterApp(); }
+  if(session){ user = session.user; await enterApp(); }
   else { $('auth').classList.add('on'); $('subTitle').textContent = 'The one-button sleep tracker'; }
-
-  supabase.auth.onAuthStateChange((_e, s) => {
-    if(s && !user){ user = s.user; location.hash=''; enterApp(); }
-  });
 }
 
 let pendingEmail = '';
-
 $('sendLink').addEventListener('click', async () => {
   const email = $('email').value.trim();
   if(!email.includes('@')) return;
-  $('sendLink').disabled = true;
-  $('sendLink').textContent = 'Sending…';
+  $('sendLink').disabled = true; $('sendLink').textContent = 'Sending…';
   const { error } = await supabase.auth.signInWithOtp({ email });
-  $('sendLink').disabled = false;
-  $('sendLink').textContent = 'Email me a 6-digit code';
+  $('sendLink').disabled = false; $('sendLink').textContent = 'Email me a 6-digit code';
   if(error){ alert(error.message); return; }
   pendingEmail = email;
   $('codeStep').style.display = 'block';
   $('code').focus();
 });
-
 $('verifyCode').addEventListener('click', async () => {
   const token = $('code').value.trim();
   if(token.length < 6) return;
   $('verifyCode').disabled = true;
-  const { data, error } = await supabase.auth.verifyOtp({
-    email: pendingEmail, token, type: 'email'
-  });
+  const { data, error } = await supabase.auth.verifyOtp({ email: pendingEmail, token, type:'email' });
   $('verifyCode').disabled = false;
   if(error){
-    const e = $('codeErr'); e.style.display = 'block';
-    e.textContent = 'That code didn\'t work — check it or send a new one.';
+    const e = $('codeErr'); e.style.display='block';
+    e.textContent = "That code didn't work — check it or send a new one.";
     return;
   }
-  if(data.session){ user = data.session.user; enterApp(); }
+  if(data.session){ user = data.session.user; await enterApp(); }
 });
+$('signOut').addEventListener('click', async () => { await supabase.auth.signOut(); location.reload(); });
 
-$('signOut').addEventListener('click', async () => {
-  await supabase.auth.signOut(); location.reload();
-});
-
+/* ══════════ data ══════════ */
 async function enterApp(){
   $('auth').classList.remove('on');
   $('tracker').classList.add('on');
   $('footAuth').style.display = 'inline';
   $('whoami').textContent = user.email;
   $('subTitle').textContent = 'Press once asleep · press once awake';
+  if(navigator.storage?.persist) navigator.storage.persist();
   await loadData();
   render();
-  // ask browser to protect local cache from eviction
-  if(navigator.storage?.persist) navigator.storage.persist();
+  flushQueue();               // retry anything that failed earlier
+  setInterval(flushQueue, 20000);
 }
 
-// ── data ──
 async function loadData(){
   setSync('syncing…');
   const cutoff = Date.now() - 30*86400000;
-  const [sess, sett] = await Promise.all([
-    supabase.from('doze_sessions').select('*').gte('start_ms', cutoff).order('start_ms'),
-    supabase.from('doze_settings').select('*').maybeSingle()
+  const [kidsRes, sessRes] = await Promise.all([
+    supabase.from('doze_children').select('*').order('created_at'),
+    supabase.from('doze_sessions').select('*').gte('start_ms', cutoff).order('start_ms')
   ]);
-  if(sess.error){ setSync('offline — showing cached data', true); const c = cache(); sessions = c.sessions; age = c.age; return; }
-  sessions = sess.data || [];
-  age = sett.data?.age || 'toddler';
-  $('age').value = age;
-  saveCache();
-  setSync('synced ✓');
-  setTimeout(()=>setSync(''), 2000);
+  if(kidsRes.error || sessRes.error){
+    const c = cache(); children = c.children; sessions = c.sessions; activeChild = c.activeChild;
+    setSync("offline — showing last saved data (presses will retry)", true);
+  }else{
+    children = kidsRes.data || [];
+    sessions = sessRes.data || [];
+    if(children.length === 0){
+      const { data } = await supabase.from('doze_children')
+        .insert({name:'Baby', age:'toddler', user_id:user.id}).select().single();
+      if(data) children = [data];
+    }
+    activeChild = localStorage.getItem('doze-active-child');
+    if(!children.find(c => c.id === activeChild)) activeChild = children[0]?.id || null;
+    saveCache();
+    setSync('synced ✓', false, true); setTimeout(()=>setSync(''), 2000);
+  }
+  renderKids();
 }
 
-function cache(){ try{ return JSON.parse(localStorage.getItem('doze-cache')) || {sessions:[],age:'toddler'}; }catch{ return {sessions:[],age:'toddler'}; } }
-function saveCache(){ localStorage.setItem('doze-cache', JSON.stringify({sessions, age})); }
-function setSync(msg, err){ const s=$('sync'); s.textContent=msg||''; s.className='sync'+(err?' err':''); }
+function cache(){ try{ return JSON.parse(localStorage.getItem('doze-cache')) || {children:[],sessions:[],activeChild:null}; }catch{ return {children:[],sessions:[],activeChild:null}; } }
+function saveCache(){ localStorage.setItem('doze-cache', JSON.stringify({children, sessions, activeChild})); }
+function setSync(msg, err, ok){
+  const s = $('sync'); s.textContent = msg || '';
+  s.className = 'sync' + (err ? ' err' : ok ? ' ok' : '');
+}
 
-const openSession = () => sessions.find(s => s.end_ms == null);
+/* ── offline retry queue: presses NEVER get lost ── */
+function queue(){ try{ return JSON.parse(localStorage.getItem('doze-queue')) || []; }catch{ return []; } }
+function setQueue(q){ localStorage.setItem('doze-queue', JSON.stringify(q)); }
+function enqueue(op){ const q = queue(); q.push(op); setQueue(q); }
+async function flushQueue(){
+  let q = queue();
+  if(!q.length) return;
+  setSync(`${q.length} press${q.length>1?'es':''} waiting to sync — retrying…`, true);
+  const remaining = [];
+  for(const op of q){
+    try{
+      if(op.op === 'start'){
+        const { data, error } = await supabase.from('doze_sessions')
+          .insert({start_ms:op.start_ms, child_id:op.child_id, user_id:user.id}).select().single();
+        if(error) throw error;
+        const local = sessions.find(s => s.id === op.temp_id);
+        if(local) local.id = data.id;
+      }else if(op.op === 'end'){
+        const { error } = await supabase.from('doze_sessions').update({end_ms:op.end_ms}).eq('id', op.id);
+        if(error) throw error;
+      }
+    }catch(e){ remaining.push(op); }
+  }
+  setQueue(remaining);
+  saveCache();
+  if(remaining.length) setSync(`${remaining.length} press${remaining.length>1?'es':''} waiting to sync — will keep retrying`, true);
+  else { setSync('all caught up ✓', false, true); setTimeout(()=>setSync(''),2000); }
+}
 
-// ── the button ──
+/* ══════════ children ══════════ */
+function renderKids(){
+  const k = $('kids');
+  k.classList.add('on');
+  k.innerHTML = '';
+  children.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'kid' + (c.id === activeChild ? ' active' : '');
+    b.textContent = c.name;
+    b.onclick = () => { activeChild = c.id; localStorage.setItem('doze-active-child', c.id); saveCache(); renderKids(); render(); };
+    k.appendChild(b);
+  });
+  const add = document.createElement('button');
+  add.className = 'kid add';
+  add.textContent = '+ add child';
+  add.onclick = addChild;
+  k.appendChild(add);
+  const c = children.find(x => x.id === activeChild);
+  if(c){ $('age').value = c.age; $('ageLabel').textContent = `${c.name}'s age (sets the range)`; }
+}
+
+async function addChild(){
+  const name = prompt("Child's name?");
+  if(!name) return;
+  const { data, error } = await supabase.from('doze_children')
+    .insert({name: name.trim(), age:'toddler', user_id:user.id}).select().single();
+  if(error){ alert("Couldn't add — check connection."); return; }
+  children.push(data);
+  activeChild = data.id;
+  localStorage.setItem('doze-active-child', data.id);
+  saveCache(); renderKids(); render();
+}
+
+$('age').addEventListener('change', async e => {
+  const c = children.find(x => x.id === activeChild);
+  if(!c) return;
+  c.age = e.target.value; saveCache(); render();
+  await supabase.from('doze_children').update({age:c.age}).eq('id', c.id);
+});
+
+/* ══════════ the button ══════════ */
+const childSessions = () => sessions.filter(s => s.child_id === activeChild);
+const openSession = () => childSessions().find(s => s.end_ms == null);
+
 $('btn').addEventListener('click', async () => {
   const btn = $('btn'); btn.disabled = true;
   const now = Date.now();
   const open = openSession();
-  try{
-    if(open){
-      if(now - open.start_ms < 60000){
-        // accidental double-press: delete
-        await supabase.from('doze_sessions').delete().eq('id', open.id);
-        sessions = sessions.filter(s => s.id !== open.id);
-        lastAction = null;
-      }else{
-        const { error } = await supabase.from('doze_sessions').update({end_ms: now}).eq('id', open.id);
-        if(error) throw error;
-        open.end_ms = now;
-        lastAction = {type:'wake', id: open.id};
-      }
+
+  if(open){
+    if(now - open.start_ms < 60000){
+      // accidental double press — remove
+      sessions = sessions.filter(s => s.id !== open.id);
+      lastAction = null;
+      if(!String(open.id).startsWith('tmp')) await supabase.from('doze_sessions').delete().eq('id', open.id).then(()=>{},()=>{});
     }else{
-      const { data, error } = await supabase.from('doze_sessions')
-        .insert({start_ms: now, user_id: user.id}).select().single();
-      if(error) throw error;
-      sessions.push(data);
-      lastAction = {type:'sleep', id: data.id};
+      open.end_ms = now;                       // optimistic: UI updates instantly
+      lastAction = {type:'wake', id: open.id};
+      const { error } = String(open.id).startsWith('tmp')
+        ? {error:{queued:true}}
+        : await supabase.from('doze_sessions').update({end_ms: now}).eq('id', open.id);
+      if(error){ enqueue({op:'end', id: open.id, end_ms: now}); }
     }
-    saveCache(); setSync('synced ✓'); setTimeout(()=>setSync(''),1500);
-  }catch(e){
-    console.error(e); setSync('couldn\'t sync — check connection and press again', true);
+  }else{
+    const temp = { id:'tmp-'+now, child_id:activeChild, start_ms: now, end_ms: null };
+    sessions.push(temp);                       // optimistic
+    lastAction = {type:'sleep', id: temp.id};
+    const { data, error } = await supabase.from('doze_sessions')
+      .insert({start_ms: now, child_id: activeChild, user_id: user.id}).select().single();
+    if(error){ enqueue({op:'start', start_ms: now, child_id: activeChild, temp_id: temp.id}); }
+    else { temp.id = data.id; if(lastAction) lastAction.id = data.id; }
   }
+  saveCache();
   btn.disabled = false;
   render();
+  const q = queue();
+  if(q.length) setSync('saved on this phone — will sync when connection is back', true);
+  else { setSync('saved & synced ✓', false, true); setTimeout(()=>setSync(''),2500); }
 });
 
 $('undo').addEventListener('click', async () => {
   if(!lastAction) return;
-  try{
-    if(lastAction.type === 'sleep'){
-      await supabase.from('doze_sessions').delete().eq('id', lastAction.id);
-      sessions = sessions.filter(s => s.id !== lastAction.id);
-    }else{
-      await supabase.from('doze_sessions').update({end_ms: null}).eq('id', lastAction.id);
-      const s = sessions.find(x => x.id === lastAction.id); if(s) s.end_ms = null;
+  if(lastAction.type === 'sleep'){
+    const id = lastAction.id;
+    sessions = sessions.filter(s => s.id !== id);
+    if(!String(id).startsWith('tmp')) await supabase.from('doze_sessions').delete().eq('id', id).then(()=>{},()=>{});
+  }else{
+    const s = sessions.find(x => x.id === lastAction.id);
+    if(s){ s.end_ms = null;
+      if(!String(s.id).startsWith('tmp')) await supabase.from('doze_sessions').update({end_ms:null}).eq('id', s.id).then(()=>{},()=>{});
     }
-    lastAction = null; saveCache();
-  }catch(e){ setSync('undo failed — check connection', true); }
-  render();
+  }
+  lastAction = null; saveCache(); render();
 });
 
-$('age').addEventListener('change', async e => {
-  age = e.target.value;
-  saveCache();
-  await supabase.from('doze_settings').upsert({user_id: user.id, age});
-  render();
-});
-
-// ── maths ──
+/* ══════════ maths & render ══════════ */
 function hoursIn(fromMs, toMs){
   let ms = 0; const now = Date.now();
-  for(const s of sessions){
+  for(const s of childSessions()){
     const end = s.end_ms ?? now;
     const a = Math.max(s.start_ms, fromMs), b = Math.min(end, toMs);
     if(b > a) ms += b - a;
@@ -402,10 +499,11 @@ function fmt(h){
 }
 const tf = ms => new Date(ms).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 
-// ── render ──
 function render(){
-  const btn = $('btn'), r = RANGES[age];
-  const open = openSession();
+  const btn = $('btn');
+  const c = children.find(x => x.id === activeChild);
+  const r = RANGES[c?.age || 'toddler'];
+  const name = c?.name || 'Baby';
 
   clearInterval(ticker);
   const tick = () => {
@@ -415,51 +513,62 @@ function render(){
       $('btnIcon').textContent = '🌙';
       const mins = Math.floor((Date.now() - o.start_ms)/60000);
       const h = Math.floor(mins/60), m = mins%60;
-      $('btnText').innerHTML = `Asleep<span class="btn-sub">${h ? h+' h ' : ''}${m} m · press when they wake</span>`;
-      $('since').textContent = '';
+      $('btnText').innerHTML = `Asleep<span class="btn-sub">press when ${name} wakes</span>`;
+      $('logline').innerHTML = `<span class="lav">🌙 Logging: fell asleep at <b>${tf(o.start_ms)}</b> · asleep for <b>${h ? h+' h ' : ''}${m} m</b></span>`;
     }else{
       btn.classList.remove('sleeping');
       $('btnIcon').textContent = '☀️';
-      $('btnText').innerHTML = `Awake<span class="btn-sub">press when they fall asleep</span>`;
-      $('since').textContent = sessions.length ? '' : 'Press the sun when they fall asleep';
+      $('btnText').innerHTML = `Awake<span class="btn-sub">press when ${name} falls asleep</span>`;
+      const last = childSessions().filter(s => s.end_ms).sort((a,b)=>b.end_ms-a.end_ms)[0];
+      $('logline').innerHTML = last
+        ? `<span class="sun">☀️ Awake since <b>${tf(last.end_ms)}</b> · last sleep ${fmt((last.end_ms-last.start_ms)/3600000)}</span>`
+        : `<span class="sun">No sleep logged yet — press the sun at nap or bedtime</span>`;
     }
   };
   tick();
-  if(open) ticker = setInterval(tick, 30000);
+  ticker = setInterval(tick, 30000);
   $('undo').classList.toggle('on', !!lastAction);
 
-  // 24h total
+  // 24h with range bar (green zone = recommended band)
   const now = Date.now();
   const h24 = hoursIn(now - 86400000, now);
   $('total').innerHTML = fmt(h24);
   const t = $('target');
-  $('meterFill').style.width = Math.min(100, (h24/r.max)*100) + '%';
+  const scaleMax = r.max + 2;
+  $('rangeZone').style.left = (r.min/scaleMax*100) + '%';
+  $('rangeZone').style.width = ((r.max-r.min)/scaleMax*100) + '%';
+  const fill = $('rangeFill');
+  fill.style.width = Math.min(100, h24/scaleMax*100) + '%';
+  fill.classList.toggle('met', h24 >= r.min);
+  $('rangeMid').textContent = `goal ${r.label}`;
+  $('rangeMax').textContent = `${scaleMax} h`;
   let band;
-  if(h24 >= r.min && h24 <= r.max + 1){ band='good'; t.className='target good'; t.textContent=`Within the recommended ${r.label} for this age ✓`; }
-  else if(h24 < r.min){ band='low'; t.className='target low'; t.textContent=`About ${fmt(r.min - h24)} under the recommended ${r.label}`; }
-  else { band='high'; t.className='target good'; t.textContent=`Above the typical ${r.label} — usually nothing to worry about`; }
+  if(h24 >= r.min && h24 <= r.max + 1){ band='good'; t.className='target good'; t.textContent = `In the healthy range for ${name}'s age ✓`; }
+  else if(h24 < r.min){ band='low'; t.className='target low'; t.textContent = `${fmt(r.min - h24)} more needed to reach the ${r.label} goal`; }
+  else { band='high'; t.className='target good'; t.textContent = `Above the typical ${r.label} — usually nothing to worry about`; }
 
-  // week bars
+  // week bars with hour labels
   const week = $('week'); week.innerHTML = '';
   const dn = ['Su','Mo','Tu','We','Th','Fr','Sa'];
   for(let i=6;i>=0;i--){
     const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-i);
     const from = d.getTime(), h = hoursIn(from, from+86400000);
     const el = document.createElement('div'); el.className='day';
-    el.innerHTML = `<div class="col"><i class="${h>=r.min?'met':''}" style="height:${Math.min(100,(h/r.max)*100)}%"></i></div>
+    el.innerHTML = `<span class="val">${h>0 ? (Math.round(h*10)/10) : ''}</span>
+      <div class="col"><i class="${h>=r.min?'met':''}" style="height:${Math.min(100,(h/r.max)*100)}%"></i></div>
       <span>${i===0?'Today':dn[d.getDay()]}</span>`;
     week.appendChild(el);
   }
 
-  // history dashboard: last 7 days, newest first, with session times
+  // history
   const hist = $('history'); hist.innerHTML = '';
   for(let i=0;i<7;i++){
     const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-i);
     const from = d.getTime(), to = from+86400000;
     const h = hoursIn(from, to);
-    const daySessions = sessions
+    const daySessions = childSessions()
       .filter(s => (s.end_ms ?? now) > from && s.start_ms < to)
-      .map(s => `${tf(Math.max(s.start_ms,from))}–${s.end_ms ? tf(Math.min(s.end_ms,to)) : 'now'}`);
+      .map(s => `<b>${tf(Math.max(s.start_ms,from))}</b>–<b>${s.end_ms ? tf(Math.min(s.end_ms,to)) : 'now'}</b> (${fmt((Math.min(s.end_ms ?? now,to)-Math.max(s.start_ms,from))/3600000)})`);
     if(i>0 && daySessions.length===0) continue;
     const label = i===0 ? 'Today' : i===1 ? 'Yesterday' : d.toLocaleDateString([], {weekday:'short', day:'numeric', month:'short'});
     const el = document.createElement('div'); el.className='hist-day';
@@ -469,13 +578,11 @@ function render(){
   }
   if(!hist.children.length) hist.innerHTML = '<div class="hist-sessions">Sessions will appear here once you start pressing the button.</div>';
 
-  // tip
   const pool = TIPS[band] || TIPS.good;
   $('tip').innerHTML = `<b>Tip:</b> ${pool[new Date().getDate() % pool.length]}`;
 }
 
 init();
-
 if('serviceWorker' in navigator){
   window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
 }
