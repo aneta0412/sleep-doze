@@ -6,7 +6,7 @@
 <title>Doze — the one-button kids sleep tracker</title>
 <meta name="description" content="Press once when they fall asleep, once when they wake. No account, no ads, no subscription. See sleep vs the recommended range for their age.">
 <meta property="og:title" content="Doze — the one-button kids sleep tracker">
-<meta property="og:description" content="One button. No account. Nothing leaves your phone.">
+<meta property="og:description" content="One button. No account. Your own private link, shared between both parents.">
 <meta name="theme-color" content="#141327">
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
 <link rel="manifest" href="/manifest.json">
@@ -127,7 +127,7 @@ if('serviceWorker' in navigator){
         <a class="btn ghost" href="#install">Install it free</a>
       </div>
       <div class="no-strings">
-        <span>No account</span><span>No ads</span><span>No subscription</span><span>Nothing leaves your phone</span>
+        <span>No account</span><span>No ads</span><span>No subscription</span><span>Shared by magic link</span>
       </div>
     </div>
 
@@ -141,12 +141,21 @@ if('serviceWorker' in navigator){
     </section>
 
     <section>
+      <h2>How the magic link works</h2>
+      <div class="steps">
+        <div class="step"><span class="n">1</span><h3>Open Doze</h3><p>The first time you open it, Doze creates your own private link — a web address with a long, random code only you have. No email, no password, nothing to fill in.</p></div>
+        <div class="step"><span class="n">2</span><h3>Share it with the other parent</h3><p>Tap <b>Copy link</b> in the app and text it to your partner. Whoever opens that link lands on the same tracker — press the button on either phone and it shows up on both.</p></div>
+        <div class="step"><span class="n">3</span><h3>It remembers you</h3><p>Each phone keeps the link, so your home-screen icon always reopens your family's data. Bookmark it too, just in case. Keep the link in the family — anyone who has it can see and edit.</p></div>
+      </div>
+    </section>
+
+    <section>
       <h2>Why not the other sleep apps?</h2>
       <div class="why">
         <div class="why-item"><span class="em">🚫</span><div><h3>No onboarding gauntlet</h3><p>No intro carousel, no "create your free account", no email verification while your toddler screams. Doze opens straight to the button.</p></div></div>
         <div class="why-item"><span class="em">💸</span><div><h3>No subscription trap</h3><p>Everything is free, forever. There is no premium tier hiding the useful bits.</p></div></div>
-        <div class="why-item"><span class="em">🔒</span><div><h3>Private by architecture</h3><p>Sleep data is stored on your device and never sent anywhere. We couldn't sell your data if we wanted to — we never have it.</p></div></div>
-        <div class="why-item"><span class="em">📴</span><div><h3>Works with no signal</h3><p>Doze runs fully offline. Nursery with terrible Wi-Fi? Doesn't matter.</p></div></div>
+        <div class="why-item"><span class="em">🔗</span><div><h3>No account — just a magic link</h3><p>Your tracker lives at its own unguessable magic link. No email, no password, no sign-up. Open it on any phone, or send it to the other parent and you both see the same data.</p></div></div>
+        <div class="why-item"><span class="em">📴</span><div><h3>Works with a weak signal</h3><p>Reads work offline from a local copy, and button presses queue up and sync the moment you're back on Wi-Fi. Nursery with terrible signal? Doesn't matter.</p></div></div>
       </div>
     </section>
 
