@@ -175,12 +175,12 @@
   <div class="auth" id="auth">
     <div class="card">
       <h2>One-time setup</h2>
-      <p style="font-size:14px;line-height:1.6">Enter your email and we'll send a 6-digit code — <b>no password, ever</b>. This just saves your data so nothing gets lost; it's not used for anything else. You'll only do this once per device.</p>
+      <p style="font-size:14px;line-height:1.6">Enter your email and we'll send a short code — <b>no password, ever</b>. This just saves your data so nothing gets lost; it's not used for anything else. You'll only do this once per device.</p>
       <input type="email" id="email" placeholder="you@example.com" autocomplete="email" inputmode="email">
-      <button id="sendLink">Email me a 6-digit code</button>
+      <button id="sendLink">Email me a sign-in code</button>
       <div id="codeStep" style="display:none">
-        <p class="sent">Code sent ✓ — check your email and type the 6 digits here:</p>
-        <input type="text" id="code" placeholder="123456" inputmode="numeric" autocomplete="one-time-code" maxlength="6" style="letter-spacing:0.3em;text-align:center;font-size:22px">
+        <p class="sent">Code sent ✓ — check your email and type the code here:</p>
+        <input type="text" id="code" placeholder="12345678" inputmode="numeric" autocomplete="one-time-code" maxlength="10" style="letter-spacing:0.3em;text-align:center;font-size:22px">
         <button id="verifyCode">Sign in</button>
         <p class="note" id="codeErr" style="color:var(--warn);display:none"></p>
       </div>
@@ -248,7 +248,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 // ── EDIT THESE TWO LINES (Supabase → Project Settings → API) ────────────────
 const SUPABASE_URL = 'https://mcnugodkatucjawtmcis.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jbnVnb2RrYXR1Y2phd3RtY2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNzYzNDMsImV4cCI6MjA5ODY1MjM0M30.-yDkAILx4fBFltSiS-FKV3dARnamj0b7mwdUnM_f_So';
+const SUPABASE_ANON_KEY = 'PASTE-YOUR-eyJ...-ANON-KEY-HERE';
+// ─────────────────────────────────────────────────────────────────────────────
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, storage:window.localStorage }
@@ -290,7 +291,7 @@ $('sendLink').addEventListener('click', async () => {
   if(!email.includes('@')) return;
   $('sendLink').disabled = true; $('sendLink').textContent = 'Sending…';
   const { error } = await supabase.auth.signInWithOtp({ email });
-  $('sendLink').disabled = false; $('sendLink').textContent = 'Email me a 6-digit code';
+  $('sendLink').disabled = false; $('sendLink').textContent = 'Email me a sign-in code';
   if(error){ alert(error.message); return; }
   pendingEmail = email;
   $('codeStep').style.display = 'block';

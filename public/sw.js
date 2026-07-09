@@ -1,4 +1,4 @@
-const CACHE = 'doze-v1';
+const CACHE = 'doze-v5';
 const SHELL = ['/', '/index.html', '/app.html', '/manifest.json', '/icon.svg'];
 
 self.addEventListener('install', e => {
